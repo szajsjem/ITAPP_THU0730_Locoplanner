@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:locoplanner/new_search.dart';
+import 'package:locoplanner/previous_searches.dart';
 
 import 'utils.dart';
 
@@ -67,7 +68,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 'Create a trip'
               ),
               SizedBox(height: screenHeight * 0.03,),
-              yellowButton(() => null, buttonWidth, buttonHeight, 'Previous searches'),
+              yellowButton(
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PreviousSearches()),
+                  );
+                },
+                buttonWidth,
+                buttonHeight,
+                'Previous searches'
+              ),
               SizedBox(height: screenHeight * 0.03,),
               yellowButton(() => null, buttonWidth, buttonHeight, 'Saved trips'),
             ],
