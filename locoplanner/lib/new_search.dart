@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locoplanner/result.dart';
 
 import 'utils.dart';
 
@@ -108,10 +109,7 @@ class _NewSearchState extends State<NewSearch> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.6, height: screenHeight *.05,),
-        backgroundColor: blueMain,
-      ),
+      appBar: appBar(screenWidth, screenHeight),
       body: Center(
         child: Column(
           children: [
@@ -120,7 +118,16 @@ class _NewSearchState extends State<NewSearch> {
             queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('200000', _citySizeController, inputType: TextInputType.number),),
             queryRow('Sleep time', 'Minimum sleep time', selectableField(['4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours'])),
             const Spacer(),
-            yellowButton(() => null, screenWidth * 0.6, screenHeight * 0.05, 'Search a trip'),
+            yellowButton(() {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ResultScreen(connections: randomConnections(5))),
+                );
+              },
+              screenWidth * 0.6,
+              screenHeight * 0.05,
+              'Search a trip'
+            ),
             SizedBox(height: screenHeight * 0.05,)
           ],
         ),
