@@ -14,7 +14,7 @@ class _NewSearchState extends State<NewSearch> {
   final TextEditingController _startController = TextEditingController();
   final TextEditingController _endController = TextEditingController();
   final TextEditingController _citySizeController = TextEditingController();
-  final int _sleepTime = 8;
+  int _sleepTime = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,6 @@ class _NewSearchState extends State<NewSearch> {
     double screenHeight = screenSize.height;
     
     const TextStyle localStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Roboto', color: Colors.black);
-    const Color fieldColor = Color.fromARGB(255, 155, 215, 234);
 
     TextField fancyTextField(String hintText, TextEditingController controller, {TextInputType inputType = TextInputType.text}){
       return TextField(
@@ -35,7 +34,7 @@ class _NewSearchState extends State<NewSearch> {
         maxLines: 2,
         decoration: InputDecoration(
           filled: true,
-          fillColor: fieldColor,
+          fillColor: blueSecondary,
           hintText: hintText,
           hintStyle: localStyle,
           border: OutlineInputBorder(
@@ -53,22 +52,27 @@ class _NewSearchState extends State<NewSearch> {
         dropdownMenuEntries.add(DropdownMenuEntry(value: entry, label: entry, labelWidget: textRoboto(entry, 16)));
       }
 
+      void onSelected(String? value) {
+        _sleepTime = int.parse(value!.split(' ')[0]);
+      }
+
       return DropdownMenu<String>(
         expandedInsets: EdgeInsets.zero,
         dropdownMenuEntries: dropdownMenuEntries,
         textStyle: localStyle,
-        initialSelection: '8 hours',
+        initialSelection: '$_sleepTime hours',
+        onSelected: onSelected,
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: fieldColor,
+          fillColor: blueSecondary,
           hintStyle: localStyle,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: BorderRadius.circular(25),
           ),
         ),
-        menuStyle: const MenuStyle(
-          backgroundColor: MaterialStatePropertyAll<Color>(fieldColor),
+        menuStyle: MenuStyle(
+          backgroundColor: MaterialStatePropertyAll<Color>(blueSecondary),
         ),
       );
     }
@@ -106,7 +110,7 @@ class _NewSearchState extends State<NewSearch> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.6, height: screenHeight *.05,),
-        backgroundColor: const Color.fromARGB(255, 25, 179, 245),
+        backgroundColor: blueMain,
       ),
       body: Center(
         child: Column(

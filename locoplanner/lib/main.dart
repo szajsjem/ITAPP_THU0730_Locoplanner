@@ -47,10 +47,14 @@ class _MyHomePageState extends State<MyHomePage> {
      
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.8,),
+        child: Container(
+          width: screenWidth,
+          color: blueMain,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.8,),
+              SizedBox(height: screenHeight * 0.2,),
               yellowButton(
                 () {
                   Navigator.push(
@@ -62,8 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 buttonHeight,
                 'Create a trip'
               ),
+              SizedBox(height: screenHeight * 0.03,),
               yellowButton(() => null, buttonWidth, buttonHeight, 'Previous searches'),
-          ],
+              SizedBox(height: screenHeight * 0.03,),
+              yellowButton(() => null, buttonWidth, buttonHeight, 'Saved trips'),
+            ],
+          ),
         ),
       ),
     );
