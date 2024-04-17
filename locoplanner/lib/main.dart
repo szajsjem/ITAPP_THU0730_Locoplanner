@@ -42,11 +42,8 @@ class _MyHomePageState extends State<MyHomePage> {
     double screenWidth = screenSize.width;
     double screenHeight = screenSize.height;
 
-    ButtonStyle style = ElevatedButton.styleFrom(
-      backgroundColor: const Color.fromARGB(255, 255, 199, 0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      fixedSize: Size(screenWidth * 0.6, screenHeight * 0.05),
-    );
+    double buttonWidth = screenWidth * 0.6;
+    double buttonHeight = screenHeight * 0.05;
      
     return Scaffold(
       body: Center(
@@ -54,13 +51,18 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.8,),
-            ElevatedButton(onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NewSearch()),
-              );
-            }, style: style, child: textRoboto('Create a trip', 16),),
-            ElevatedButton(onPressed: () {}, style: style, child: textRoboto('Previous searches', 16),),
+              yellowButton(
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NewSearch()),
+                  );
+                },
+                buttonWidth,
+                buttonHeight,
+                'Create a trip'
+              ),
+              yellowButton(() => null, buttonWidth, buttonHeight, 'Previous searches'),
           ],
         ),
       ),
