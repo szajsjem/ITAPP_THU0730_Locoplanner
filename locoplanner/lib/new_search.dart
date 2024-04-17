@@ -92,6 +92,7 @@ class NewSearch extends StatelessWidget {
     }
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.6, height: screenHeight *.05,),
         backgroundColor: const Color.fromARGB(255, 25, 179, 245),
