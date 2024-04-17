@@ -2,8 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'utils.dart';
 
-class NewSearch extends StatelessWidget {
+class NewSearch extends StatefulWidget {
   const NewSearch({super.key});
+
+  @override
+  State<NewSearch> createState() => _NewSearchState();
+}
+
+class _NewSearchState extends State<NewSearch> {
+
+  final TextEditingController _startController = TextEditingController();
+  final TextEditingController _endController = TextEditingController();
+  final TextEditingController _citySizeController = TextEditingController();
+  final int _sleepTime = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +27,7 @@ class NewSearch extends StatelessWidget {
 
     TextField fancyTextField(String hintText, TextEditingController controller, {TextInputType inputType = TextInputType.text}){
       return TextField(
-        // controller: controller,
+        controller: controller,
         keyboardType: inputType,
         textAlign: TextAlign.center,
         style: localStyle,
@@ -100,9 +111,9 @@ class NewSearch extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            queryRow('Starting station', 'Station you want to start your journey at', fancyTextField('Start', TextEditingController()),),
-            queryRow('Ending station', 'Station you want to end your journey at', fancyTextField('End', TextEditingController()),),
-            queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('200000', TextEditingController(), inputType: TextInputType.number),),
+            queryRow('Starting station', 'Station you want to start your journey at', fancyTextField('Start', _startController),),
+            queryRow('Ending station', 'Station you want to end your journey at', fancyTextField('End', _endController),),
+            queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('200000', _citySizeController, inputType: TextInputType.number),),
             queryRow('Sleep time', 'Minimum sleep time', selectableField(['4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours'])),
             const Spacer(),
             yellowButton(() => null, screenWidth * 0.6, screenHeight * 0.05, 'Search a trip'),
