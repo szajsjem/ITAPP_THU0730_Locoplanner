@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_version
+"Mikołaj Kuranowski","https://mkuran.pl/gtfs/",pl,2024-04-17 04:18:49

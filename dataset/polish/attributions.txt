@@ -1,0 +1,2 @@
+organization_name,is_producer,is_operator,is_authority,is_data_source,attribution_url
+"Schedules provided by: PKP Intercity S.A. (retrieved 2024-04-17 14:30:16)",0,1,0,1,"https://intercity.pl/"
