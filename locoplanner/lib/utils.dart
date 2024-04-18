@@ -1,4 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:locoplanner/models/station.dart';
+
+import 'models/connections.dart';
 
 Color blueMain = const Color.fromARGB(255, 25, 179, 245);
 Color yellowMain = const Color.fromARGB(255, 255, 199, 0);
@@ -22,4 +27,44 @@ ElevatedButton yellowButton(Function()? onPressed, double width, double height, 
     ),
     child: textRoboto(text, 16),
   );
+}
+
+AppBar appBar(double screenWidth, double screenHeight){
+  return AppBar(
+    title: Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.6, height: screenHeight *.05,),
+    backgroundColor: blueMain,
+  );
+}
+
+List<Station> randomPoints(int amount){
+  List<Station> points = [];
+  Random random = Random();
+  for (int i = 0; i <= amount; i++){
+    points.add(Station(
+      name: 'Station $i',
+      city: 'City $i',
+      country: 'Country $i',
+      longitude: 16.562243 + random.nextDouble(),
+      latitude: 50.603557 + random.nextDouble(),
+    ));
+  }
+
+  return points;
+}
+
+List<Connection> randomConnections(int amount){
+  List<Connection> connections = [];
+  List<Station> points = randomPoints(amount);
+  Random random = Random();
+  int j = 0;
+  for (int i = j; i < points.length - 1; i++){
+    connections.add(Connection(
+      departure: "1${j++}:${random.nextInt(60).toString().padLeft(2, '0')}",
+      arrival: "1${j++}:${random.nextInt(60).toString().padLeft(2, '0')}",
+      departureStation: points[i],
+      arrivalStation: points[i + 1],
+    ));
+  }
+
+  return connections;
 }

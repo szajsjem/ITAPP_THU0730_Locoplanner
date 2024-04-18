@@ -1,0 +1,14 @@
+agency_id,agency_name,agency_url,agency_timezone,agency_lang
+1,MAV,https://www.bahn.de,Europe/Berlin,de
+10,Nederlandse Spoorwegen,https://www.bahn.de,Europe/Berlin,de
+11,SÜWEX,https://www.bahn.de,Europe/Berlin,de
+12,Dänische Staatsbahnen,https://www.bahn.de,Europe/Berlin,de
+13,DB Fernverkehr (Codesharing),https://www.bahn.de,Europe/Berlin,de
+2,HZPP,https://www.bahn.de,Europe/Berlin,de
+3,SBB,https://www.bahn.de,Europe/Berlin,de
+4,PKP Intercity,https://www.bahn.de,Europe/Berlin,de
+5,Ceske Drahy,https://www.bahn.de,Europe/Berlin,de
+6,ZSSK,https://www.bahn.de,Europe/Berlin,de
+7,Österreichische Bundesbahnen,https://www.bahn.de,Europe/Berlin,de
+8,DB Fernverkehr AG,https://www.bahn.de,Europe/Berlin,de
+9,SNCF,https://www.bahn.de,Europe/Berlin,de

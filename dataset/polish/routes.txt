@@ -1,0 +1,7 @@
+agency_id,route_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+0,EIC,EIC,,2,898989,FFFFFF
+0,EIP,EIP,,2,002664,FFFFFF
+0,IC,IC,,2,F25E18,FFFFFF
+0,TLK,TLK,,2,8505A3,FFFFFF
+0,ZKA IC,ZKA IC,,3,DE4E4E,FFFFFF
+0,ZKA TLK,ZKA TLK,,3,DE4E4E,FFFFFF
