@@ -12,7 +12,7 @@ endif()
 project ("locoplanner")
 
 # Dodaj źródło do pliku wykonywalnego tego projektu.
-add_executable (locoplanner "locoplanner.cpp"  "pathfinding.cpp" "pathfinding.h" "list2.cpp")
+add_executable (locoplanner "locoplanner.cpp"  "pathfinding.cpp" "pathfinding.h")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET locoplanner PROPERTY CXX_STANDARD 20)
