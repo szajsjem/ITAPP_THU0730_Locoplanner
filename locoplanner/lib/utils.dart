@@ -29,10 +29,85 @@ ElevatedButton yellowButton(Function()? onPressed, double width, double height, 
   );
 }
 
-AppBar appBar(double screenWidth, double screenHeight){
+AppBar appBar(double screenWidth, double screenHeight, {bool isResultsPanel = false, required BuildContext context}){
   return AppBar(
     title: Image.asset('lib/assets/Locoplanner.png', width: screenWidth * 0.6, height: screenHeight *.05,),
     backgroundColor: blueMain,
+    actions: isResultsPanel ? [
+      IconButton(
+        icon: const Icon(Icons.info),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const AlertDialog(
+                title: Text('Icon caption', textAlign: TextAlign.center,),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.train),
+                        Text(' - '),
+                        Text('Total time en route'),
+                      ],
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Icon(Icons.timeline_outlined),
+                        Text(' - '),
+                        Text('Total trip time'),
+                      ],
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Icon(Icons.timer_rounded),
+                        Text(' - '),
+                        Flexible(
+                          child: Text(
+                            'Average sightseeing time per city',
+                            maxLines: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Icon(Icons.location_city),
+                        Text(' - '),
+                        Text(
+                          'Count of visited cities',
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Icon(Icons.stars_rounded),
+                        Text(' - '),
+                        Text('Highlighted city'),
+                      ],
+                    ),
+                    SizedBox(height: 10,),
+                    Row(
+                      children: [
+                        Icon(Icons.flag),
+                        Text(' - '),
+                        Text('Count of visited countries'),
+                      ],
+                    ),
+                  ]
+                ),
+              );
+            },
+          );
+        },
+      )
+    ] : null,
   );
 }
 

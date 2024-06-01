@@ -58,7 +58,7 @@ class _ResultScreenState extends State<ResultScreen> {
     String mainText = "${widget.connections[0].departureStation.name} -> ${widget.connections[widget.connections.length - 1].arrivalStation.name}";
 
     return Scaffold(
-      appBar: appBar(screenWidth, screenHeight),
+      appBar: appBar(screenWidth, screenHeight, context: context),
       body: Column(
         children: [
           SizedBox(

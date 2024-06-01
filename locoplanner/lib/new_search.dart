@@ -109,7 +109,7 @@ class _NewSearchState extends State<NewSearch> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: appBar(screenWidth, screenHeight),
+      appBar: appBar(screenWidth, screenHeight, context: context),
       body: Center(
         child: Column(
           children: [
