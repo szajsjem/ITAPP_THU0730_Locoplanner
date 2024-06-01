@@ -16,6 +16,7 @@ class _NewSearchState extends State<NewSearch> {
   final TextEditingController _endController = TextEditingController();
   final TextEditingController _citySizeController = TextEditingController();
   int _sleepTime = 8;
+  DateTime? selectedDateTime;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +79,63 @@ class _NewSearchState extends State<NewSearch> {
       );
     }
 
+    Widget dateTimePickerWidget() {
+      String placeholder = selectedDateTime != null
+              ? '${selectedDateTime!.day}/${selectedDateTime!.month}/${selectedDateTime!.year} ${selectedDateTime!.hour}:${selectedDateTime!.minute}'
+              : 'Select date';
+
+      return GestureDetector(
+      onTap: () {
+        showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2100),
+        ).then((selectedDate) {
+        if (selectedDate != null) {
+          showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.now(),
+          ).then((selectedTime) {
+          if (selectedTime != null) {
+            setState(() {
+              selectedDateTime = DateTime(
+              selectedDate.year,
+              selectedDate.month,
+              selectedDate.day,
+              selectedTime.hour,
+              selectedTime.minute,
+              );
+            });
+          }
+          });
+        }
+        });
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+        color: blueSecondary,
+        borderRadius: BorderRadius.circular(25),
+        ),
+        child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+          placeholder,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+          ),
+          ),
+        ],
+        ),
+      ),
+      );
+    }
+
     Row queryRow(String upperText, String lowerText, Widget input){
       return Row(
         children: [
@@ -117,6 +175,7 @@ class _NewSearchState extends State<NewSearch> {
             queryRow('Ending station', 'Station you want to end your journey at', fancyTextField('End', _endController),),
             queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('200000', _citySizeController, inputType: TextInputType.number),),
             queryRow('Sleep time', 'Minimum sleep time', selectableField(['4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours'])),
+            queryRow('Start date', 'The date and time your journey would start on', dateTimePickerWidget()),
             const Spacer(),
             yellowButton(() {
                 Navigator.push(
