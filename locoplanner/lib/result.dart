@@ -17,8 +17,10 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   late GoogleMapController _controller;
   late PolylinePoints polylinePoints;
+  late List<bool> expandedConnections;
   Map<PolylineId, Polyline> polylines = {};
   List<LatLng> polylineCoordinates = [];
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   LatLng _middle(){
     double lat = 0;
@@ -33,18 +35,72 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   void initState() {
+    expandedConnections = List<bool>.filled(widget.connections.length, false);
     super.initState();
     polylinePoints = PolylinePoints();
 
-    for (int i = 0; i < widget.connections.length - 1; i++){
-      polylineCoordinates.add(LatLng(widget.connections[i].departureStation.latitude, widget.connections[i].departureStation.longitude));
-      polylines[PolylineId(i.toString())] = Polyline(
-        polylineId: PolylineId(i.toString()),
-        color: blueMain,
-        points: polylineCoordinates,
-        width: 5,
+
+    for (int i = 0; i < widget.connections.length; i++){
+      final coordinates = LatLng(widget.connections[i].departureStation.latitude, widget.connections[i].departureStation.longitude);
+      final Marker marker = Marker(
+        markerId: MarkerId(i.toString()),
+        position: coordinates,
+        infoWindow: InfoWindow(
+          title: widget.connections[i].departureStation.name,
+          snippet: widget.connections[i].departure,
+        ),
       );
+      
+      markers[MarkerId(i.toString())] = marker;
+
+      polylineCoordinates.add(coordinates);
     }
+
+    final coordinates = LatLng(widget.connections.last.arrivalStation.latitude, widget.connections.last.arrivalStation.longitude);
+    int i = widget.connections.length;
+    final Marker marker = Marker(
+      markerId: MarkerId(i.toString()),
+      position: coordinates,
+      infoWindow: InfoWindow(
+        title: widget.connections.last.arrivalStation.name,
+        snippet: widget.connections.last.arrival,
+      ),
+    );
+    
+    markers[MarkerId(i.toString())] = marker;
+
+    polylineCoordinates.add(coordinates);
+    polylines[PolylineId(i.toString())] = Polyline(
+      polylineId: PolylineId(i.toString()),
+      color: blueMain,
+      points: polylineCoordinates,
+      width: 5,
+    );
+  }
+
+  Future showMap(double screenWidth, double screenHeight) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SizedBox(
+            width: screenWidth,
+            height: screenHeight * 0.5,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _middle(),
+                zoom: 8,
+              ),
+              onMapCreated: (GoogleMapController controller) {
+                _controller = controller;
+              },
+              polylines: Set<Polyline>.of(polylines.values),
+              markers: Set<Marker>.of(markers.values),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -57,75 +113,76 @@ class _ResultScreenState extends State<ResultScreen> {
 
     String mainText = "${widget.connections[0].departureStation.name} -> ${widget.connections[widget.connections.length - 1].arrivalStation.name}";
 
+    const textPadding = EdgeInsets.all(4.0);
+
     return Scaffold(
-      appBar: appBar(screenWidth, screenHeight),
+      appBar: appBar(screenWidth, screenHeight, context: context),
       body: Column(
         children: [
-          SizedBox(
-            width: screenWidth * 0.8,
-            child: Column(
-              children: [
-                buffer,
-                Card(
-                  color: blueSecondary,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        textRoboto(mainText, 20),
-                        buffer,
-                        for (int i = 0; i < widget.connections.length + 1; i++)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              
-                                // if(i > 0) textJS(widget.connections[i - 1].departure, 16),
-                                // if(i > 0) const Icon(Icons.arrow_forward),
-                                // const SizedBox(width: 4),
-                                // if(i == widget.connections.length - 1) textJS(widget.connections[i].departureStation.name, 16) else textJS(widget.connections[i].arrivalStation.name, 16),
-                                // const SizedBox(width: 4),
-                                // if(i < widget.connections.length) const Icon(Icons.arrow_forward),
-                                // if(i < widget.connections.length) textJS(widget.connections[i].arrival, 16),
-                              children: i==0 ? [
-                                textJS(widget.connections[i].departureStation.name, 16),
-                                const Icon(Icons.arrow_forward),
-                                textJS(widget.connections[i].departure, 16),
-                              ] : i != widget.connections.length ? [
-                                textJS(widget.connections[i - 1].departure, 16),
-                                const Icon(Icons.arrow_forward),
-                                textJS(widget.connections[i - 1].arrivalStation.name, 16),
-                                const Icon(Icons.arrow_forward),
-                                textJS(widget.connections[i - 1].arrival, 16)
-                              ] : [
-                                textJS(widget.connections[i - 1].arrival, 16),
-                                const Icon(Icons.arrow_forward),
-                                textJS(widget.connections[i - 1].arrivalStation.name, 16),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
           Center(
             child: SizedBox(
-              width: screenWidth,
-              height: screenHeight * 0.5,
-              child: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: _middle(),
-                  zoom: 8,
-                ),
-                onMapCreated: (GoogleMapController controller) {
-                  _controller = controller;
-                },
-                polylines: Set<Polyline>.of(polylines.values),
-              ),
+              width: screenWidth * 0.9,
+              child: Column(
+                children: [
+                  buffer,
+                  Card(
+                    color: blueSecondary,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          textRoboto(mainText, 20),
+                          buffer,
+                          SizedBox(
+                            height: screenHeight * 0.35,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: widget.connections.length,
+                              itemBuilder: (context, index) {
+                                Connection connection = widget.connections[index];
+                                return ExpansionPanelList(
+                                  expansionCallback: (panelIndex, isExpanded) {
+                                    setState(() => expandedConnections[index] = isExpanded);
+                                  },
+                                  elevation: 1,
+                                  expandedHeaderPadding: EdgeInsets.zero,
+                                  children: [
+                                    ExpansionPanel(
+                                      headerBuilder: (BuildContext context, bool isExpanded) {
+                                        return ListTile(
+                                          title: Text(
+                                            "${connection.departureStation.name} to ${connection.arrivalStation.name}",
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        );
+                                      },
+                                      body: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text("Departure: ${connection.departure}"),
+                                            SizedBox(height: 8),
+                                            Text("Arrival: ${connection.arrival}"),
+                                          ],
+                                        ),
+                                      ),
+                                      isExpanded: expandedConnections[index],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          )
+                        ]
+                      )
+                    )
+                  ),
+                  buffer,
+                  yellowButton(() => showMap(screenWidth, screenHeight), screenWidth * 0.5, screenHeight * 0.05, "Show on the map"),
+                  yellowButton(() {}, screenWidth * 0.5, screenHeight * 0.05, "Save to favorites"),
+                ]
+              )
             ),
           ),
         ],
@@ -133,3 +190,4 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 }
+
