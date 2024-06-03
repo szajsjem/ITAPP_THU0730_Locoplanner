@@ -11,6 +11,8 @@
 #include <cmath>
 #include <limits>
 #include <corecrt_math_defines.h>
+#include <sstream>
+#include <iomanip>
 
 long long timeToSeconds(int seconds, int minute, int hour, int day, int month, int year, int year0) {
 	int monthLengths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -28,6 +30,62 @@ long long timeToSeconds(int seconds, int minute, int hour, int day, int month, i
 	totalSeconds += hour * 60 * 60;
 	totalSeconds += minute * 60;
 	return totalSeconds;
+}
+std::string secondsToDate(long long totalSeconds, int year0) {
+	int monthLengths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	int year = year0;
+	long long secondsInYear;
+
+	// Find the year
+	while (true) {
+		secondsInYear = ((year % 4 == 0) ? 366 : 365) * 24 * 60 * 60;
+		if (totalSeconds < secondsInYear) {
+			break;
+		}
+		totalSeconds -= secondsInYear;
+		year++;
+	}
+
+	// Find the month
+	bool isLeapYear = (year % 4 == 0);
+	if (isLeapYear) {
+		monthLengths[1] = 29;
+	}
+	else {
+		monthLengths[1] = 28;
+	}
+	int month = 0;
+	while (month < 12) {
+		long long secondsInMonth = monthLengths[month] * 24 * 60 * 60;
+		if (totalSeconds < secondsInMonth) {
+			break;
+		}
+		totalSeconds -= secondsInMonth;
+		month++;
+	}
+	month++; // Convert month to 1-based index
+
+	// Find the day
+	int day = totalSeconds / (24 * 60 * 60);
+	totalSeconds %= (24 * 60 * 60);
+	day++; // Convert day to 1-based index
+
+	// Find the hour
+	int hour = totalSeconds / (60 * 60);
+	totalSeconds %= (60 * 60);
+
+	// Find the minute
+	int minute = totalSeconds / 60;
+
+	// Create the date string
+	std::ostringstream dateStream;
+	dateStream << std::setw(4) << std::setfill('0') << year << "-"
+		<< std::setw(2) << std::setfill('0') << month << "-"
+		<< std::setw(2) << std::setfill('0') << day << " "
+		<< std::setw(2) << std::setfill('0') << hour << ":"
+		<< std::setw(2) << std::setfill('0') << minute;
+
+	return dateStream.str();
 }
 
 void pathfinder::loadStations(std::string filename){
@@ -244,7 +302,10 @@ void pathfinder::setMaxTripTime(float hours){
 }
 
 void pathfinder::setDesiredTripTime(float hours){
-	maxTripSeconds = hours * 60 * 60;
+	desiredTripSeconds = hours * 60 * 60;
+}
+void pathfinder::setMinimumTrainHopTime(float minutes) {
+	trainHopTime = minutes * 60;
 }
 
 void pathfinder::setTravelType(std::string type){
@@ -252,15 +313,19 @@ void pathfinder::setTravelType(std::string type){
 }
 
 void pathfinder::setMinimumSleepTime(float hours){
-	//todo
+	minSleep = hours * 60 * 60;
 }
 
 void pathfinder::setMinimumCityPopulationToStop(int population){
-	//todo
+	minPopulation = population;
 }
 
 double calculateDistance(float lat1, float lon1, float lat2, float lon2) {
-	const double R = 6371e3; // Earth radius in meters
+	//naive
+	//return sqrt(pow(lat1 - lat2, 2) + pow(lon1 - lon2, 2));
+
+	//good version
+	const double R = 6371; // Earth radius
 	double phi1 = lat1 * M_PI / 180;
 	double phi2 = lat2 * M_PI / 180;
 	double deltaPhi = (lat2 - lat1) * M_PI / 180;
@@ -271,10 +336,23 @@ double calculateDistance(float lat1, float lon1, float lat2, float lon2) {
 		sin(deltaLambda / 2) * sin(deltaLambda / 2);
 	double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-	return R * c; // Distance in meters
+	return R * c; // Distance
 }
 
 void pathfinder::calculate(){//todo keep ordered in order
+
+	struct astarData {
+		long long currTime;
+		std::vector<connection*> path;
+	};
+	class comparer {
+	public:
+		constexpr bool operator()(const std::pair<double, astarData>& lhs, const std::pair<double, astarData>& rhs) const
+		{
+			return lhs.first > rhs.first;
+		}
+	};
+
 
 	fillLookupConnections();
 
@@ -306,30 +384,39 @@ void pathfinder::calculate(){//todo keep ordered in order
 
 		for (int ii = 0; ii < stops.size(); ii++) {
 			if (used[ii]) continue;
-
+			
 			// A* search to find the shortest path from stops[curr] to stops[ii]
-			std::priority_queue<std::pair<double, std::vector<connection*>>> pq;
-			pq.push({ 0, {} });
+			std::priority_queue<std::pair<double, astarData>,std::vector<std::pair<double, astarData>>,comparer> pq;
+			astarData t;
+			t.currTime = currSecond;
+			pq.push({ 0, t});
 
 			while (!pq.empty()) {
-				auto [cost, path] = pq.top();
+				auto [cost, adata] = pq.top();
 				pq.pop();
-				station* currentStation = path.empty() ? stops[curr].first : path.back()->next;
+				station* currentStation = adata.path.empty() ? stops[curr].first : adata.path.back()->next;
 
 				if (currentStation->stationNum == stops[ii].first->stationNum) {
 					if (cost < minimum) {
 						minimum = cost;
-						bestPath = path;
+						bestPath = adata.path;
+						currSecond = adata.currTime;
 						num = ii;
 					}
 					break;
 				}
 
 				for (auto& conn : currentStation->connections) {
-					if (conn.departure > currSecond + stops[curr].second->visitTimeSeconds) {
-						double newCost = conn.arrival - conn.departure + calculateDistance(conn.next->lat, conn.next->lon, stops[ii].first->lat, stops[ii].first->lon);
-						std::vector<connection*> newPath = path;
-						newPath.push_back(&conn);
+					if (conn.departure > adata.currTime) {//odje¿d¿amy po tym jak przyjedziemy
+						if (conn.arrival > startingSecond + maxTripSeconds)continue;//trochê za póŸno
+						if(adata.path.size()>0)
+							if (conn.line != adata.path.back()->line)//zmiana poci¹gu
+								if (conn.departure < (adata.currTime + trainHopTime))
+									continue;
+						astarData newPath = adata;
+						newPath.currTime = conn.arrival;
+						newPath.path.push_back(&conn);
+						double newCost = newPath.currTime + calculateDistance(conn.next->lat, conn.next->lon, stops[ii].first->lat, stops[ii].first->lon);
 						pq.push({ newCost, newPath });
 					}
 				}
@@ -339,28 +426,38 @@ void pathfinder::calculate(){//todo keep ordered in order
 		if (num != -1) {
 			suborder.push_back(bestPath);
 			curr = num;
+			currSecond += stops[num].second->visitTimeSeconds;
 		}
 		
 	}
 	{
-		std::priority_queue<std::pair<double, std::vector<connection*>>> pq;
-		pq.push({ 0, {} });
+		std::priority_queue<std::pair<double, astarData>, std::vector<std::pair<double, astarData>>, comparer> pq;
+		astarData t;
+		t.currTime = currSecond;
+		pq.push({ 0, t });
 		station* ends = convertNumToPointer(end.station);
 		while (!pq.empty()) {
-			auto [cost, path] = pq.top();
+			auto [cost, adata] = pq.top();
 			pq.pop();
-			station* currentStation = path.empty() ? stops[curr].first : path.back()->next;
+			station* currentStation = adata.path.empty() ? stops[curr].first : adata.path.back()->next;
 
 			if (currentStation->stationNum == ends->stationNum) {
-				suborder.push_back(path);
+				suborder.push_back(adata.path);
 				break;
 			}
 
+
 			for (auto& conn : currentStation->connections) {
-				if (conn.departure > currSecond + stops[curr].second->visitTimeSeconds) {
-					double newCost = conn.arrival-conn.departure + calculateDistance(ends->lat, ends->lon, conn.next->lat, conn.next->lon);
-					std::vector<connection*> newPath = path;
-					newPath.push_back(&conn);
+				if (conn.departure > adata.currTime) {//odje¿d¿amy po tym jak przyjedziemy
+					if (conn.arrival > startingSecond + maxTripSeconds)continue;//trochê za póŸno
+					if (adata.path.size() > 0)
+						if (conn.line != adata.path.back()->line)//zmiana poci¹gu
+							if (conn.departure < (adata.currTime + trainHopTime))
+								continue;
+					astarData newPath = adata;
+					newPath.currTime = conn.arrival;
+					newPath.path.push_back(&conn);
+					double newCost = newPath.currTime + calculateDistance(conn.next->lat, conn.next->lon, ends->lat, ends->lon)*newPath.path.size();
 					pq.push({ newCost, newPath });
 				}
 			}
@@ -419,4 +516,22 @@ station* pathfinder::convertNameToPointer(std::string stationName)
 	}
 	printf("not found station\n");
 	return NULL;
+}
+
+
+void pathfinder::saveToFile(std::string filename){
+	FILE* f;
+	fopen_s(&f, filename.c_str(), "w");
+	if (f == NULL)return;
+	fprintf(f, "station,lat,lon,arrival,departure,train\n");
+	if (calculatedOrder.size() == 0) {//not found 
+
+	}
+	std::string arrv="0000-00-00 00:00";
+	for (auto& s : calculatedOrder) {
+		fprintf(f,"%s,%f,%f,%s,%s,%s\n", s.start->stationName.c_str(), s.start->lat, s.start->lon,arrv.c_str(), secondsToDate(s.ride->departure, year0).c_str(), s.ride->line.c_str() + 11);
+		arrv = secondsToDate(s.ride->arrival, year0);
+	}
+	station* s = convertNumToPointer(end.station);
+	fprintf(f, "%s,%f,%f,%s,%s,%s\n", s->stationName.c_str(), s->lat, s->lon, arrv.c_str(), "0000-00-00 00:00", "end");
 }
