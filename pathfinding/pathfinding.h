@@ -3,6 +3,7 @@
 #include <vector>
 
 struct station;
+std::string secondsToDate(long long totalSeconds, int year0);
 
 struct connection {
 	std::string company, line;
@@ -14,6 +15,7 @@ struct connection {
 
 struct station {
 	std::string stationName;
+	int population;
 	int stationNum;
 	float lat, lon;
 	std::vector<connection> connections;
@@ -37,6 +39,11 @@ class pathfinder {
 	long long startingSecond = 0;
 	long long maxTripSeconds = 1;
 	long long desiredTripSeconds = 1;
+	long long trainHopTime = 1;
+
+	long long minSleep = 0;
+	long long minPopulation = 10000;
+
 	std::vector<visitpoint> anywhere;
 	std::vector<std::vector<visitpoint>> ordered;
 	visitpoint start;
@@ -70,9 +77,12 @@ public:
 	void setTravelType(std::string type);
 	void setMinimumSleepTime(float hours);
 	void setMinimumCityPopulationToStop(int population);
+	void setMinimumTrainHopTime(float minutes);
 	
 	void calculate();
 
 	std::vector<std::string> getTrainStops();
 	std::vector<connection> getconnections();
+
+	void saveToFile(std::string filename);
 };
