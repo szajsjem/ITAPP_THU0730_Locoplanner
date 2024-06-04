@@ -24,7 +24,7 @@ for group in grouped:
     target.append(trip)
 
 # Create an empty dataframe to store the transformed data
-df = pd.DataFrame(columns=['trip_id', 'start_station', 'end_station', 'start_time', 'end_time', 'start_lat', 'start_lon', 'end_lat', 'end_lon'])
+df = pd.DataFrame(columns=['trip_id', 'start_station', 'end_station', 'start_time', 'end_time', 'start_lat', 'start_lon', 'end_lat', 'end_lon', 'city', 'country'])
 
 # Iterate over each trip in the target list
 for trip in target:
@@ -43,7 +43,9 @@ for trip in target:
         end_coords = stops.loc[stops['stop_id'] == end_station, ['stop_lat', 'stop_lon']].values[0]
         
         # Append the data to the dataframe
-        new_row = pd.DataFrame({'trip_id': [trip_id], 'start_station': [start_station], 'end_station': [end_station], 'start_time': [start_time], 'end_time': [end_time], 'start_lat': [start_coords[0]], 'start_lon': [start_coords[1]], 'end_lat': [end_coords[0]], 'end_lon': [end_coords[1]]})
+        new_row = pd.DataFrame({'trip_id': [trip_id], 'start_station': [start_station], 'end_station': [end_station],
+                                'start_time': [start_time], 'end_time': [end_time], 'start_lat': [start_coords[0]], 
+                                'start_lon': [start_coords[1]], 'end_lat': [end_coords[0]], 'end_lon': [end_coords[1]]})
         df = pd.concat([df, new_row], ignore_index=True)
         # Print the resulting dataframe
 
