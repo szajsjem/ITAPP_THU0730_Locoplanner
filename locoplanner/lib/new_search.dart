@@ -46,9 +46,9 @@ class _NewSearchState extends State<NewSearch> {
         <String, dynamic>{
           'start': _startController.text,
           'end': _endController.text,
-          // 'citysize': _citySizeController.text,
+          'citysize': _citySizeController.text,
           'sleep': _sleepTime.toString(),
-          // 'time': selectedDateTime!.subtract(const Duration(days: 60)).toString(),
+          'time': selectedDateTime!.subtract(const Duration(days: 40)).toString(),
         },
       );
 
@@ -234,7 +234,7 @@ class _NewSearchState extends State<NewSearch> {
           children: [
             queryRow('Starting station', 'Station you want to start your journey at', fancyTextField('Start', _startController),),
             queryRow('Ending station', 'Station you want to end your journey at', fancyTextField('End', _endController),),
-            queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('200000', _citySizeController, inputType: TextInputType.number),),
+            queryRow('City size', 'Minimum city population to justify a stop', fancyTextField('City size', _citySizeController, inputType: TextInputType.number),),
             queryRow('Sleep time', 'Minimum sleep time', selectableField(['4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours'])),
             queryRow('Start date', 'The date and time your journey would start on', dateTimePickerWidget()),
             const Spacer(),
