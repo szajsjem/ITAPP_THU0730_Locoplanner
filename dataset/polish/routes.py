@@ -1,5 +1,6 @@
 import pandas as pd
 import gtfs_kit as gk
+import tqdm
 routes = pd.read_csv(r'dataset/polish/routes.txt')
 stops = pd.read_csv(r'dataset/polish/stops.txt')
 trips = pd.read_csv(r'dataset/polish/trips.txt')
@@ -11,7 +12,7 @@ trip_ids = trips['trip_id'].unique()
 
 grouped = stop_times.groupby('trip_id')
 
-for group in grouped:
+for group in tqdm.tqdm(grouped):
     trip= (group[0],[])
     start_station = group[1].iloc[0]['stop_id']
     start_time = group[1].iloc[0]['departure_time']
@@ -27,7 +28,7 @@ for group in grouped:
 df = pd.DataFrame(columns=['trip_id', 'start_station', 'end_station', 'start_time', 'end_time', 'start_lat', 'start_lon', 'end_lat', 'end_lon', 'city', 'country'])
 
 # Iterate over each trip in the target list
-for trip in target:
+for trip in tqdm.tqdm(target):
     trip_id = trip[0]
     trip_data = trip[1]
     
