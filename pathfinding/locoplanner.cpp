@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
     setlocale(LC_CTYPE, ".UTF8");
 
     std::string startStation = "Hel";
-    std::string endStation = "Wrocław Główny";
+    std::string endStation = "Katowice";
     std::string outputFile = "out.txt";
     int startYear = 2024, startMonth = 4, startDay = 15, startHour = 8, startMinute = 0;
     float desiredTripTime = 12.0, maxTripTime = 240.0, minimumTrainHopTime = 5.0;
@@ -159,6 +159,8 @@ int main(int argc, char* argv[]) {
     p.setTravelPoint(startStation, -1, true, 0, false, true, false);
 
     p.setTravelPoint(endStation, -1, true, 0, false, false, true);
+
+    p.setTravelPoint(stations[rand() % stations.size()], -1, true, minimumTrainHopTime * 60);
 
     p.setStartTime(startMinute, startHour, startDay, startMonth, startYear);
     p.setDesiredTripTime(desiredTripTime);
