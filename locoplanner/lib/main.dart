@@ -2,10 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:locoplanner/new_search.dart';
 import 'package:locoplanner/previous_searches.dart';
+import 'package:locoplanner/search_history.dart';
 
 import 'utils.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SearchHistory.loadData();
+
   runApp(const MyApp());
 }
 
@@ -34,8 +38,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-
 
   @override
   Widget build(BuildContext context) {

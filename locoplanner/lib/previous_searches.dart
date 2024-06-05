@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:locoplanner/result.dart';
+import 'package:locoplanner/search_history.dart';
 
 import 'models/connections.dart';
 import 'utils.dart';
@@ -21,9 +22,7 @@ class _PreviousSearchesState extends State<PreviousSearches> {
   void initState() {
     super.initState();
 
-    for (int i = 0; i < 5; i++) {
-      previousSearches.add(randomConnections(3 + Random().nextInt(5)));
-    }
+    previousSearches = SearchHistory.connections;
   }
 
   @override
@@ -44,11 +43,23 @@ class _PreviousSearchesState extends State<PreviousSearches> {
               children: <Widget>[
                 Column(
                   children: previousSearches.map((search) {
+                    DateTime startDate = DateTime.parse(search.first.departure);
+                    DateTime endDate = DateTime.parse(search.last.arrival);
+                    int totalTime = endDate.difference(startDate).inMinutes;
+
+                    Duration ert = Duration.zero;
+                    for (int i=0; i<search.length; i++){
+                      ert += DateTime.parse(search[i].arrival).difference(DateTime.parse(search[i].departure));
+                    }
+
+                    int ertInt = ert.inMinutes;
+                    int astInt = (totalTime - ertInt) ~/ search.length;
+
                     String start = search.first.departureStation.name;
                     String destination = search.last.arrivalStation.name;
-                    String totalEnRouteTime = "${2 + Random().nextInt(10)} h ${Random().nextInt(60)} min";
-                    String totalTravelTime = "${2 + Random().nextInt(7)} d ${Random().nextInt(24)} h ${Random().nextInt(60)} min";
-                    String averageSightseeingTime = "${3 + Random().nextInt(7)} h ${Random().nextInt(60)} min";
+                    String totalEnRouteTime = "${ertInt~/60} h ${ertInt % 60} min";
+                    String totalTravelTime = "${totalTime ~/ (60 * 24)} d ${totalTime ~/ 60} h ${totalTime % 60} min";
+                    String averageSightseeingTime = "${astInt~/24} h ${astInt % 60} min";
                     int citiesVisited = search.length;
                     List<Connection> route = search;
 
@@ -131,18 +142,18 @@ class _PreviousSearchesState extends State<PreviousSearches> {
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.start,
                                                 children: [
-                                                  Text(route[Random().nextInt(max(route.length - 1, 1))].arrivalStation.name),
+                                                  Text(route[Random().nextInt(max(route.length, 1))].arrivalStation.name),
                                                   const SizedBox(width: 10,),
                                                   const Icon(Icons.stars_rounded),
                                                 ],
                                               ),
                                                                                             
-                                              Row(
+                                              const Row(
                                                 mainAxisAlignment: MainAxisAlignment.start,
                                                 children: [
-                                                  Text((1 + Random().nextInt(3)).toString()),
-                                                  const SizedBox(width: 10,),
-                                                  const Icon(Icons.flag),
+                                                  Text('1'),
+                                                  SizedBox(width: 10,),
+                                                  Icon(Icons.flag),
                                                 ],
                                               ),
                                             ]

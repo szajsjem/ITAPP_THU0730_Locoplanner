@@ -37,6 +37,9 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_polyline_points: ^2.0.0
   google_maps_flutter: ^2.6.1
+  loading_animation_widget: ^1.2.1
+  http: ^1.2.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:locoplanner/models/connections.dart';
+import 'package:locoplanner/models/trip.dart';
 import 'package:locoplanner/result.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:http/http.dart' as http;
+import 'package:locoplanner/search_history.dart';
 
 import 'utils.dart';
 
@@ -17,6 +24,60 @@ class _NewSearchState extends State<NewSearch> {
   final TextEditingController _citySizeController = TextEditingController();
   int _sleepTime = 8;
   DateTime? selectedDateTime;
+
+  Future<void> fetchTrip() async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+          child: LoadingAnimationWidget.hexagonDots(
+            color: Theme.of(context).colorScheme.primary,
+            size: 55,
+          ),
+        );
+      },
+      barrierDismissible: false,
+      useRootNavigator: false,
+    );
+
+    const uri = 'https://szajsjem.pl/route';
+
+    final body = jsonEncode(
+        <String, dynamic>{
+          'start': _startController.text,
+          'end': _endController.text,
+          // 'citysize': _citySizeController.text,
+          'sleep': _sleepTime.toString(),
+          // 'time': selectedDateTime!.subtract(const Duration(days: 60)).toString(),
+        },
+      );
+
+    final response = await http.post(
+      Uri.parse(uri,),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: body,
+    );
+
+    print(body);
+    print(response.body);
+
+    List<Trip> trips = tripFromJson(response.body);
+    List<Connection> connections = Connection.connectionsFromTrips(trips);
+    print(trips.length);
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+
+    SearchHistory.addConnection(connections);
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ResultScreen(connections: connections)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,11 +238,12 @@ class _NewSearchState extends State<NewSearch> {
             queryRow('Sleep time', 'Minimum sleep time', selectableField(['4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours'])),
             queryRow('Start date', 'The date and time your journey would start on', dateTimePickerWidget()),
             const Spacer(),
-            yellowButton(() {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ResultScreen(connections: randomConnections(5))),
-                );
+            yellowButton(() async {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => ResultScreen(connections: randomConnections(5))),
+                // );
+                await fetchTrip();
               },
               screenWidth * 0.6,
               screenHeight * 0.05,
