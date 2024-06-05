@@ -14,7 +14,7 @@ struct connection {
 };
 
 struct station {
-	std::string stationName;
+	std::string stationName,country;
 	int population;
 	int stationNum;
 	float lat, lon;
@@ -57,6 +57,7 @@ class pathfinder {
 public:
 	void loadStations(std::string filename);
 	void loadConnections(std::string filename);
+	void loadCitysizes(std::string filename);
 
 	/*
 		tutaj mogê dodaæ lokalizacje gps poszczególnych stacji jak chcemy to na mapie wyœwietlaæ

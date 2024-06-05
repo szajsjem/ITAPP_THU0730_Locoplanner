@@ -32,3 +32,9 @@ google-services.json
 # Android Profiling
 *.hprof
 locoplanner/android/app/src/main/AndroidManifest.xml
+/restapi/output.txt
+/restapi/sta.txt
+/restapi/stops.txt
+/restapi/stop_times.txt
+/restapi/locoplanner.exe
+/restapi/__pycache__

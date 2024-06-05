@@ -10,9 +10,13 @@
 #include <queue>
 #include <cmath>
 #include <limits>
-#include <corecrt_math_defines.h>
 #include <sstream>
 #include <iomanip>
+
+
+#ifdef WIN32
+#include <corecrt_math_defines.h>
+#endif 
 
 long long timeToSeconds(int seconds, int minute, int hour, int day, int month, int year, int year0) {
 	int monthLengths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -89,15 +93,19 @@ std::string secondsToDate(long long totalSeconds, int year0) {
 }
 
 void pathfinder::loadStations(std::string filename){
-	std::fstream file(filename.data(), std::ios::in);
+	std::fstream file(filename.c_str(), std::ios::in);
+	printf("file op\n");
 	if (!file.is_open())return;
+	printf("file good\n");
 	std::string temp;
 	bool ok = false;
 	while (std::getline(file, temp)){
+		//printf(temp.c_str());
+		//printf("\n");
 		std::istringstream ss(temp);
 		std::string token;
 		int i = 0;
-		station s;
+		station s; s.population = 0;
 		if (!ok) {
 			// Check the headers
 			std::getline(ss, token, ',');
@@ -137,8 +145,10 @@ void pathfinder::loadStations(std::string filename){
 }
 
 void pathfinder::loadConnections(std::string filename) {
-	std::fstream file(filename, std::ios::in);
+	std::fstream file(filename.c_str(), std::ios::in);
+	printf("file op\n");
 	if (!file.is_open()) return;
+	printf("file good\n");
 
 	std::string temp;
 	bool ok = false;
@@ -154,6 +164,8 @@ void pathfinder::loadConnections(std::string filename) {
 	std::string trip_id;
 
 	while (std::getline(file, temp)) {
+		//printf(temp.c_str());
+		//printf("\n");
 		std::istringstream ss(temp);
 		std::string token;
 		int i = 0;
@@ -173,8 +185,6 @@ void pathfinder::loadConnections(std::string filename) {
 			if (token != "departure_time") return;
 			std::getline(ss, token, ',');
 			if (token != "platform") return;
-			std::getline(ss, token, ',');
-			if (token != "official_dist_traveled") return;
 			ok = true;
 			continue;
 		}
@@ -247,6 +257,57 @@ void pathfinder::loadConnections(std::string filename) {
 		}
 	}
 }
+
+void pathfinder::loadCitysizes(std::string filename){
+	std::fstream file(filename.c_str(), std::ios::in);
+	printf("file op\n");
+	if (!file.is_open())return;
+	printf("file good\n");
+	std::string temp;
+	bool ok = false;
+	while (std::getline(file, temp)) {
+		//printf(temp.c_str());
+		//printf("\n");
+		std::istringstream ss(temp);
+		std::string token;
+		int i = 0;
+		station *s;
+		if (!ok) {
+			// Check the headers
+			std::getline(ss, token, ',');
+			if (token != "start_station") return;
+			std::getline(ss, token, ',');
+			if (token != "start_city_pop") return;
+			std::getline(ss, token, ',');
+			if (token != "country") return;
+			ok = true;
+			continue;
+		}
+		while (std::getline(ss, token, ',')) {
+			switch (i)
+			{
+			case(0):
+			{
+				int stationNum = atoi(token.c_str());
+				s = convertNumToPointer(stationNum);
+			}	break;
+			case(1):
+				if(s != NULL)
+				s->population = atoi(token.c_str());
+				break;
+			case(2):
+				if (s != NULL)
+				s->country = token;
+				break;
+			default:
+				i = 0;
+				break;
+			}
+			i++;
+		}
+	}
+}
+
 
 std::vector<std::string> pathfinder::getStations(){
 	std::vector<std::string> r;
@@ -325,7 +386,7 @@ double calculateDistance(float lat1, float lon1, float lat2, float lon2) {
 	//return sqrt(pow(lat1 - lat2, 2) + pow(lon1 - lon2, 2));
 
 	//good version
-	const double R = 6371; // Earth radius
+	const double R = 6371000; // Earth radius
 	double phi1 = lat1 * M_PI / 180;
 	double phi2 = lat2 * M_PI / 180;
 	double deltaPhi = (lat2 - lat1) * M_PI / 180;
@@ -347,9 +408,18 @@ void pathfinder::calculate(){//todo keep ordered in order
 	};
 	class comparer {
 	public:
-		constexpr bool operator()(const std::pair<double, astarData>& lhs, const std::pair<double, astarData>& rhs) const
-		{
-			return lhs.first > rhs.first;
+		bool operator()(std::pair<double, astarData>& lhs, std::pair<double, astarData>& rhs) {
+			if (lhs.second.path.back()->nextStation == rhs.second.path.back()->nextStation) {
+				if (lhs.second.currTime > rhs.second.currTime)
+					lhs.second.currTime += 1000000;
+				if (lhs.second.currTime < rhs.second.currTime)
+					rhs.second.currTime += 1000000;
+				if (lhs.second.path.size() > rhs.second.path.size())
+					lhs.second.currTime += 1000000;
+				if (lhs.second.path.size() <  rhs.second.path.size())
+					rhs.second.currTime += 1000000;
+			}
+			return (lhs.first + lhs.second.currTime) < (rhs.first + rhs.second.currTime);
 		}
 	};
 
@@ -376,7 +446,7 @@ void pathfinder::calculate(){//todo keep ordered in order
 	int curr = 0;
 	long long currSecond = startingSecond;
 	for (int i = 0; i < stops.size(); i++) {
-		used[i] = true;
+		used[curr] = true;
 		if (i == stops.size() - 1)break;
 		double minimum = std::numeric_limits<double>::max();
 		int num = -1;
@@ -394,10 +464,18 @@ void pathfinder::calculate(){//todo keep ordered in order
 			while (!pq.empty()) {
 				auto [cost, adata] = pq.top();
 				pq.pop();
+				if (pq.size() > 20000000) {
+					std::priority_queue<std::pair<double, astarData>, std::vector<std::pair<double, astarData>>, comparer> nq;
+					for (int iii = 0; iii < 15000000; iii++) {
+						nq.push(pq.top());
+						pq.pop();
+					}
+					pq.swap(nq);
+				}
 				station* currentStation = adata.path.empty() ? stops[curr].first : adata.path.back()->next;
 
 				if (currentStation->stationNum == stops[ii].first->stationNum) {
-					if (cost < minimum) {
+					if (adata.currTime < minimum) {
 						minimum = cost;
 						bestPath = adata.path;
 						currSecond = adata.currTime;
@@ -416,7 +494,7 @@ void pathfinder::calculate(){//todo keep ordered in order
 						astarData newPath = adata;
 						newPath.currTime = conn.arrival;
 						newPath.path.push_back(&conn);
-						double newCost = newPath.currTime + calculateDistance(conn.next->lat, conn.next->lon, stops[ii].first->lat, stops[ii].first->lon);
+						double newCost = calculateDistance(conn.next->lat, conn.next->lon, stops[ii].first->lat, stops[ii].first->lon);
 						pq.push({ newCost, newPath });
 					}
 				}
@@ -439,13 +517,20 @@ void pathfinder::calculate(){//todo keep ordered in order
 		while (!pq.empty()) {
 			auto [cost, adata] = pq.top();
 			pq.pop();
+			if (pq.size() > 20000000) {
+				std::priority_queue<std::pair<double, astarData>, std::vector<std::pair<double, astarData>>, comparer> nq;
+				for (int iii = 0; iii < 15000000; iii++) {
+					nq.push(pq.top());
+					pq.pop();
+				}
+				pq.swap(nq);
+			}
 			station* currentStation = adata.path.empty() ? stops[curr].first : adata.path.back()->next;
 
 			if (currentStation->stationNum == ends->stationNum) {
 				suborder.push_back(adata.path);
 				break;
 			}
-
 
 			for (auto& conn : currentStation->connections) {
 				if (conn.departure > adata.currTime) {//odje¿d¿amy po tym jak przyjedziemy
@@ -457,7 +542,7 @@ void pathfinder::calculate(){//todo keep ordered in order
 					astarData newPath = adata;
 					newPath.currTime = conn.arrival;
 					newPath.path.push_back(&conn);
-					double newCost = newPath.currTime + calculateDistance(conn.next->lat, conn.next->lon, ends->lat, ends->lon)*newPath.path.size();
+					double newCost = calculateDistance(conn.next->lat, conn.next->lon, ends->lat, ends->lon);
 					pq.push({ newCost, newPath });
 				}
 			}
@@ -520,16 +605,16 @@ station* pathfinder::convertNameToPointer(std::string stationName)
 
 
 void pathfinder::saveToFile(std::string filename){
-	FILE* f;
-	fopen_s(&f, filename.c_str(), "w");
+	FILE* f=fopen( filename.c_str(), "w");
 	if (f == NULL)return;
-	fprintf(f, "station,lat,lon,arrival,departure,train\n");
-	if (calculatedOrder.size() == 0) {//not found 
-
-	}
+	//fprintf(f, "station,lat,lon,arrival,departure,train\n");
 	std::string arrv="0000-00-00 00:00";
+	std::string train = "";
 	for (auto& s : calculatedOrder) {
-		fprintf(f,"%s,%f,%f,%s,%s,%s\n", s.start->stationName.c_str(), s.start->lat, s.start->lon,arrv.c_str(), secondsToDate(s.ride->departure, year0).c_str(), s.ride->line.c_str() + 11);
+		if (train != s.ride->line) {//true){//
+			fprintf(f, "%s,%f,%f,%s,%s,%s\n", s.start->stationName.c_str(), s.start->lat, s.start->lon, arrv.c_str(), secondsToDate(s.ride->departure, year0).c_str(), s.ride->line.c_str() + 11);
+			train = s.ride->line;
+		}
 		arrv = secondsToDate(s.ride->arrival, year0);
 	}
 	station* s = convertNumToPointer(end.station);
