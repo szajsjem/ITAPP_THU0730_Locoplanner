@@ -81,8 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 buttonHeight,
                 'Previous searches'
               ),
-              SizedBox(height: screenHeight * 0.03,),
-              yellowButton(() => null, buttonWidth, buttonHeight, 'Saved trips'),
             ],
           ),
         ),
