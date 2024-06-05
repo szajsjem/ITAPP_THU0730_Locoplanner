@@ -15,12 +15,9 @@ class SearchHistory{
       
       final json = sharedPreferences!.getString(connectionsSP);
       if (json != null){
-        final Map<String, dynamic> data = jsonDecode(json) as Map<String, dynamic>;
-
-        if (data['connections'] != null){
-          for (final List<Connection> connection in data['connections']){
-            _connections.add(connection);
-          }
+        final List<dynamic> data = jsonDecode(json) as List<dynamic>;
+        for (final dynamic connection in data){
+          _connections.add((connection as List<dynamic>).map((x) => Connection.fromJson(x as Map<String, dynamic>)).toList());
         }
       }
     }

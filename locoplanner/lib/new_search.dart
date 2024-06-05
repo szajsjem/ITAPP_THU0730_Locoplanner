@@ -42,6 +42,8 @@ class _NewSearchState extends State<NewSearch> {
 
     const uri = 'https://szajsjem.pl/route';
 
+    selectedDateTime ??= DateTime.now();
+
     final body = jsonEncode(
         <String, dynamic>{
           'start': _startController.text,
@@ -60,23 +62,40 @@ class _NewSearchState extends State<NewSearch> {
       body: body,
     );
 
-    print(body);
-    print(response.body);
-
-    List<Trip> trips = tripFromJson(response.body);
-    List<Connection> connections = Connection.connectionsFromTrips(trips);
-    print(trips.length);
-
+    
     if (mounted) {
       Navigator.of(context).pop();
     }
 
-    SearchHistory.addConnection(connections);
-    
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ResultScreen(connections: connections)),
-    );
+    if (response.statusCode ~/ 100 != 2) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('No Trip Found'),
+            content: const Text('Sorry, no trip was found for the given search criteria.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else{
+      List<Trip> trips = tripFromJson(response.body);
+      List<Connection> connections = Connection.connectionsFromTrips(trips);
+
+      SearchHistory.addConnection(connections);
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ResultScreen(connections: connections)),
+      );
+    }
   }
 
   @override
