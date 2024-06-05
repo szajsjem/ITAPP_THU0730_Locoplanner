@@ -179,8 +179,8 @@ class _ResultScreenState extends State<ResultScreen> {
                     )
                   ),
                   buffer,
+                  buffer,
                   yellowButton(() => showMap(screenWidth, screenHeight), screenWidth * 0.5, screenHeight * 0.05, "Show on the map"),
-                  yellowButton(() {}, screenWidth * 0.5, screenHeight * 0.05, "Save to favorites"),
                 ]
               )
             ),
