@@ -58,8 +58,8 @@ class _PreviousSearchesState extends State<PreviousSearches> {
                     String start = search.first.departureStation.name;
                     String destination = search.last.arrivalStation.name;
                     String totalEnRouteTime = "${ertInt~/60} h ${ertInt % 60} min";
-                    String totalTravelTime = "${totalTime ~/ (60 * 24)} d ${totalTime ~/ 60} h ${totalTime % 60} min";
-                    String averageSightseeingTime = "${astInt~/24} h ${astInt % 60} min";
+                    String totalTravelTime = "${totalTime ~/ (60 * 24)} d ${(totalTime ~/ 60) % 24} h ${totalTime % 60} min";
+                    String averageSightseeingTime = "${astInt~/60} h ${astInt % 60} min";
                     int citiesVisited = search.length;
                     List<Connection> route = search;
 
